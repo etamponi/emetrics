@@ -25,5 +25,12 @@ class CorrelationRatio(object):
             for x in class_inputs:
                 shift = (x - class_mean).reshape((feature_num, 1))
                 w_matrix += numpy.dot(shift, shift.transpose())
-        wilks_lambda = numpy.linalg.det(w_matrix) / numpy.linalg.det(w_matrix + b_matrix)
+        numerator = numpy.linalg.det(w_matrix)
+        denominator = numpy.linalg.det(w_matrix + b_matrix)
+        if numpy.all(b_matrix == 0):
+            wilks_lambda = 1
+        elif numpy.all(w_matrix == 0):
+            wilks_lambda = 0
+        else:
+            wilks_lambda = numerator / denominator
         return 1 - wilks_lambda
