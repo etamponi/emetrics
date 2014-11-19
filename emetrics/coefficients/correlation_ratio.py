@@ -27,10 +27,8 @@ class CorrelationRatio(object):
                 w_matrix += numpy.dot(shift, shift.transpose())
         numerator = numpy.linalg.det(w_matrix)
         denominator = numpy.linalg.det(w_matrix + b_matrix)
-        if numpy.all(b_matrix == 0):
-            wilks_lambda = 1
-        elif numpy.all(w_matrix == 0):
-            wilks_lambda = 0
+        if denominator == 0:
+            wilks_lambda = 1 if numpy.all(b_matrix == 0) else 0
         else:
             wilks_lambda = numerator / denominator
         return 1 - wilks_lambda
