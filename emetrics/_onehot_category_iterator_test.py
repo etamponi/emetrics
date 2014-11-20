@@ -20,3 +20,11 @@ class OneHotCategoryIteratorTest(unittest.TestCase):
             expected_onehot_labels[i*5:(i+1)*5] = 1
             numpy.testing.assert_array_equal(expected_onehot_labels, onehot_labels,
                                              err_msg="one hot encoding not equal for label {}".format(i))
+
+    def test_onehot_binary_iteration(self):
+        labels = numpy.asarray(list("aaaaabbbbb"))
+        expected_onehot_labels = numpy.asarray(5*[1] + 5*[0])
+        it = OneHotCategoryIterator()
+        onehot_labels = list(it(labels))
+        self.assertEqual(1, len(onehot_labels), msg="Binary labels should output only one vector")
+        numpy.testing.assert_array_equal(expected_onehot_labels, onehot_labels[0])

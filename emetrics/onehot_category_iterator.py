@@ -1,4 +1,6 @@
 import numpy
+from sklearn.preprocessing.data import OneHotEncoder
+from sklearn.preprocessing.label import LabelEncoder
 
 __author__ = 'Emanuele Tamponi'
 
@@ -6,12 +8,12 @@ __author__ = 'Emanuele Tamponi'
 class OneHotCategoryIterator(object):
 
     def __call__(self, labels):
-        onehot_labels = numpy.zeros(15)
-        onehot_labels[:5] = 1
-        yield onehot_labels
-        onehot_labels[:5] = 0
-        onehot_labels[5:10] = 1
-        yield onehot_labels
-        onehot_labels[5:10] = 0
-        onehot_labels[10:] = 1
-        yield onehot_labels
+        labels = LabelEncoder().fit_transform(labels)
+        labels = labels.reshape((len(labels), 1))
+        classes = numpy.unique(labels)
+        labels = OneHotEncoder(sparse=False).fit_transform(labels)
+        if len(classes) == 2:
+            yield labels.T[0]
+            return
+        for column in labels.T:
+            yield column
