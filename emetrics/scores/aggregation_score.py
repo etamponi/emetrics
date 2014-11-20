@@ -3,7 +3,7 @@ import numpy
 __author__ = 'Emanuele Tamponi'
 
 
-class CorrelationRatio(object):
+class AggregationScore(object):
 
     def __call__(self, inputs, labels):
         classes = numpy.unique(labels)
