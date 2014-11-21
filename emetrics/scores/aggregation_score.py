@@ -25,10 +25,16 @@ class AggregationScore(object):
             for x in class_inputs:
                 shift = (x - class_mean).reshape((feature_num, 1))
                 w_matrix += numpy.dot(shift, shift.transpose())
-        numerator = numpy.linalg.det(w_matrix)
-        denominator = numpy.linalg.det(w_matrix + b_matrix)
-        if denominator == 0:
-            wilks_lambda = 1 if numpy.all(b_matrix == 0) else 0
-        else:
-            wilks_lambda = numerator / denominator
+        try:
+            inv_w_matrix = numpy.linalg.inv(w_matrix)
+        except numpy.linalg.LinAlgError:
+            if numpy.all(b_matrix == 0):
+                return 0
+            else:
+                return 1
+        eig_vals = numpy.sort(abs(numpy.linalg.eigvals(numpy.dot(inv_w_matrix, b_matrix))))[::-1]
+        s = min(len(classes)-1, feature_num)
+        wilks_lambda = 1
+        for i in range(s):
+            wilks_lambda *= 1.0 / (1.0 + eig_vals[i])
         return 1 - wilks_lambda
