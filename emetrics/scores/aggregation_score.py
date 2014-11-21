@@ -5,6 +5,9 @@ __author__ = 'Emanuele Tamponi'
 
 class AggregationScore(object):
 
+    def __init__(self, score="wilks"):
+        self.score = score
+
     def __call__(self, inputs, labels):
         classes = numpy.unique(labels)
         feature_num = inputs.shape[1]
@@ -34,7 +37,10 @@ class AggregationScore(object):
                 return 1
         eig_vals = numpy.sort(abs(numpy.linalg.eigvals(numpy.dot(inv_w_matrix, b_matrix))))[::-1]
         s = min(len(classes)-1, feature_num)
-        wilks_lambda = 1
-        for i in range(s):
-            wilks_lambda *= 1.0 / (1.0 + eig_vals[i])
-        return 1 - wilks_lambda
+        if self.score == "wilks":
+            wilks_lambda = 1
+            for i in range(s):
+                wilks_lambda *= 1.0 / (1.0 + eig_vals[i])
+            return 1 - wilks_lambda
+        if self.score == "roy":
+            return eig_vals[0] / (1 + eig_vals[0])

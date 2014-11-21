@@ -8,14 +8,13 @@ __author__ = 'Emanuele Tamponi'
 
 class AggregationScoreTest(unittest.TestCase):
 
-    def test_score_on_dataset(self):
+    def test_wilks_score_on_dataset(self):
         # Result taken from Rencher's book Methods for Multivariate Analysis
         with open('test_files/aggregation_score_dataset.arff') as f:
-            data = arff.load(f)
-            X = numpy.asarray([row[:-1] for row in data["data"]])
-            y = numpy.asarray([row[-1] for row in data["data"]])
-            cr = AggregationScore()
-            self.assertAlmostEqual(1 - 0.154, cr(X, y), places=3, msg="Wilks Correlation Ratio not working")
+            data = numpy.asarray(arff.load(f)["data"])
+            X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
+            s = AggregationScore()(X, y)
+            self.assertAlmostEqual(1 - 0.154, s, places=3, msg="Wilks' Score not working, got {}".format(s))
 
     def test_score_is_zero(self):
         X = numpy.ones((10, 2))
@@ -29,3 +28,11 @@ class AggregationScoreTest(unittest.TestCase):
         y = ["a"] * 5 + ["b"] * 5
         cr = AggregationScore()
         self.assertEqual(1, cr(X, y), msg="CR should be 1, got {}".format(cr(X, y)))
+
+    def test_roys_score_on_dataset(self):
+        # Result taken from Rencher's book Methods for Multivariate Analysis
+        with open('test_files/aggregation_score_dataset.arff') as f:
+            data = numpy.asarray(arff.load(f)["data"])
+            X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
+            s = AggregationScore(score="roy")(X, y)
+            self.assertAlmostEqual(0.652, s, places=3, msg="Roy's Score not working, got {}".format(s))
