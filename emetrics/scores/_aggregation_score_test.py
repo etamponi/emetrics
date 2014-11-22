@@ -8,14 +8,6 @@ __author__ = 'Emanuele Tamponi'
 
 class AggregationScoreTest(unittest.TestCase):
 
-    def test_wilks_score_on_dataset(self):
-        # Result taken from Rencher's book Methods for Multivariate Analysis
-        with open('test_files/aggregation_score_dataset.arff') as f:
-            data = numpy.asarray(arff.load(f)["data"])
-            X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
-            s = AggregationScore()(X, y)
-            self.assertAlmostEqual(1 - 0.154, s, places=3, msg="Wilks' Score not working, got {}".format(s))
-
     def test_score_is_zero(self):
         X = numpy.ones((10, 2))
         y = numpy.random.choice(["a", "b"], size=10)
@@ -51,4 +43,20 @@ class AggregationScoreTest(unittest.TestCase):
             data = numpy.asarray(arff.load(f)["data"])
             X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
             s = AggregationScore(score="lawley")(X, y)
-            self.assertAlmostEqual(0.422, s, places=3, msg="Pillai's Score not working, got {}".format(s))
+            self.assertAlmostEqual(0.422, s, places=3, msg="Lawley's Score not working, got {}".format(s))
+
+    def test_wilks_score_on_dataset(self):
+        # Result taken from Rencher's book Methods for Multivariate Analysis
+        with open('test_files/aggregation_score_dataset.arff') as f:
+            data = numpy.asarray(arff.load(f)["data"])
+            X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
+            s = AggregationScore()(X, y)
+            self.assertAlmostEqual(1 - 0.154, s, places=3, msg="Wilks' Score not working, got {}".format(s))
+
+    def test_armonic_score_on_dataset(self):
+        # Result taken from Rencher's book Methods for Multivariate Analysis
+        with open('test_files/aggregation_score_dataset.arff') as f:
+            data = numpy.asarray(arff.load(f)["data"])
+            X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
+            s = AggregationScore("armonic")(X, y)
+            self.assertAlmostEqual(0.374, s, places=3, msg="Armonic Score not working, got {}".format(s))

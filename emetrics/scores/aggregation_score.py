@@ -19,11 +19,14 @@ class AggregationScore(object):
                 return 0
             else:
                 return 1
-        if self.score == "wilks":
+        if self.score in {"wilks", "armonic"}:
             wilks_lambda = 1
             for eigenvalue in eigenvalues:
                 wilks_lambda *= 1.0 / (1.0 + eigenvalue)
-            return 1 - wilks_lambda
+            if self.score == "armonic":
+                return 1 - pow(wilks_lambda, 1.0 / rank)
+            else:
+                return 1 - wilks_lambda
         if self.score == "roy":
             return eigenvalues[0] / (1 + eigenvalues[0])
         if self.score == "pillai":
