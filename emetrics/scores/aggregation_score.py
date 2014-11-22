@@ -5,10 +5,14 @@ __author__ = 'Emanuele Tamponi'
 
 class AggregationScore(object):
 
-    def __init__(self, score="wilks"):
+    def __init__(self, score="wilks", noise=1e-6):
         self.score = score
+        self.noise = noise
 
     def __call__(self, inputs, labels):
+        # Random noise to inputs
+        noise = self.noise * numpy.random.randn(*inputs.shape)
+        inputs += noise
         classes = numpy.unique(labels)
         feature_num = inputs.shape[1]
         class_means = numpy.zeros((len(classes), feature_num))
@@ -44,3 +48,6 @@ class AggregationScore(object):
             return 1 - wilks_lambda
         if self.score == "roy":
             return eig_vals[0] / (1 + eig_vals[0])
+        if self.score == "pillai":
+            vs = sum(eig_val / (1 + eig_val) for eig_val in eig_vals[:s])
+            return vs / s

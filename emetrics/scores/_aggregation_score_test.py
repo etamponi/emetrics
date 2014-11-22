@@ -19,7 +19,7 @@ class AggregationScoreTest(unittest.TestCase):
     def test_score_is_zero(self):
         X = numpy.ones((10, 2))
         y = numpy.random.choice(["a", "b"], size=10)
-        cr = AggregationScore()
+        cr = AggregationScore(noise=0)
         self.assertEqual(0, cr(X, y), msg="CR should be 0, got {}".format(cr(X, y)))
 
     def test_score_is_one(self):
@@ -36,3 +36,10 @@ class AggregationScoreTest(unittest.TestCase):
             X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
             s = AggregationScore(score="roy")(X, y)
             self.assertAlmostEqual(0.652, s, places=3, msg="Roy's Score not working, got {}".format(s))
+
+    def test_pillais_score_on_dataset(self):
+        with open('test_files/aggregation_score_dataset.arff') as f:
+            data = numpy.asarray(arff.load(f)["data"])
+            X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
+            s = AggregationScore(score="pillai")(X, y)
+            self.assertAlmostEqual(0.326, s, places=3, msg="Pillai's Score not working, got {}".format(s))
