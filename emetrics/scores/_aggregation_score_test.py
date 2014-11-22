@@ -19,14 +19,16 @@ class AggregationScoreTest(unittest.TestCase):
     def test_score_is_zero(self):
         X = numpy.ones((10, 2))
         y = numpy.random.choice(["a", "b"], size=10)
-        cr = AggregationScore(noise=0)
-        self.assertEqual(0, cr(X, y), msg="CR should be 0, got {}".format(cr(X, y)))
+        s = AggregationScore(noise_level=0)(X, y)
+        self.assertEqual(0, s, msg="CR should be 0, got {}".format(s))
+        s = AggregationScore()(X, y)
+        self.assertNotEqual(0, s, msg="CR should not be 0 with noise, got 0!")
 
     def test_score_is_one(self):
         X = numpy.ones((10, 2))
         X[:5, :] = 0
         y = ["a"] * 5 + ["b"] * 5
-        cr = AggregationScore()
+        cr = AggregationScore(noise_level=0)
         self.assertEqual(1, cr(X, y), msg="CR should be 1, got {}".format(cr(X, y)))
 
     def test_roys_score_on_dataset(self):
