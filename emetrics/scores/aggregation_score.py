@@ -11,7 +11,7 @@ class AggregationScore(object):
 
     def __call__(self, inputs, labels):
         # Random noise to inputs
-        noise = self.noise * numpy.random.randn(*inputs.shape)
+        noise = self.noise * (2*numpy.random.rand(*inputs.shape) - 1)
         inputs += noise
         classes = numpy.unique(labels)
         feature_num = inputs.shape[1]
