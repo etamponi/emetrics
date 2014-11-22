@@ -51,3 +51,6 @@ class AggregationScore(object):
         if self.score == "pillai":
             vs = sum(eig_val / (1 + eig_val) for eig_val in eig_vals[:s])
             return vs / s
+        if self.score == "lawley":
+            v = eig_vals[:s].sum() / s
+            return v / (1 + v)
