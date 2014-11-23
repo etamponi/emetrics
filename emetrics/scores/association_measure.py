@@ -3,10 +3,10 @@ import numpy
 __author__ = 'Emanuele Tamponi'
 
 
-class AggregationScore(object):
+class AssociationMeasure(object):
 
-    def __init__(self, score="wilks", noise_level=1e-6):
-        self.score = score
+    def __init__(self, measure="wilks", noise_level=1e-6):
+        self.measure = measure
         self.noise_level = noise_level
 
     def __call__(self, inputs, labels):
@@ -19,20 +19,20 @@ class AggregationScore(object):
                 return 0
             else:
                 return 1
-        if self.score in {"wilks", "armonic"}:
+        if self.measure in {"wilks", "armonic"}:
             wilks_lambda = 1
             for eigenvalue in eigenvalues:
                 wilks_lambda *= 1.0 / (1.0 + eigenvalue)
-            if self.score == "armonic":
+            if self.measure == "armonic":
                 return 1 - pow(wilks_lambda, 1.0 / rank)
             else:
                 return 1 - wilks_lambda
-        if self.score == "roy":
+        if self.measure == "roy":
             return eigenvalues[0] / (1 + eigenvalues[0])
-        if self.score == "pillai":
+        if self.measure == "pillai":
             v = (eigenvalues / (1 + eigenvalues)).sum()
             return v / rank
-        if self.score == "lawley":
+        if self.measure == "lawley":
             v = eigenvalues.sum() / rank
             return v / (1 + v)
 
