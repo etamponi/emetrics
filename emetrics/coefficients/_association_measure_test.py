@@ -1,7 +1,7 @@
 import unittest
 import arff
 import numpy
-from emetrics.scores.association_measure import AssociationMeasure
+from emetrics.coefficients.association_measure import AssociationMeasure
 
 __author__ = 'Emanuele Tamponi'
 
