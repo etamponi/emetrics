@@ -5,9 +5,11 @@ __author__ = 'Emanuele Tamponi'
 
 class AssociationMeasure(object):
 
-    def __init__(self, measure="wilks", noise_level=1e-6):
+    def __init__(self, measure="wilks", noise_level=1e-6,
+                 noise_generator=lambda shape: numpy.random.uniform(-1.0, 1.0, size=shape)):
         self.measure = measure
         self.noise_level = noise_level
+        self.noise_generator = noise_generator
 
     def __call__(self, inputs, labels):
         inputs = self._inject_noise(inputs)
@@ -37,7 +39,7 @@ class AssociationMeasure(object):
             return v / (1 + v)
 
     def _inject_noise(self, inputs):
-        noise = self.noise_level * (2*numpy.random.rand(*inputs.shape) - 1)
+        noise = self.noise_level * self.noise_generator(inputs.shape)
         return inputs + noise
 
     @staticmethod
