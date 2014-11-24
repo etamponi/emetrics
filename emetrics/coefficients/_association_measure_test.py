@@ -60,3 +60,10 @@ class AssociationMeasureTest(unittest.TestCase):
             X, y = data[:, :-1].astype(numpy.float64), data[:, -1]
             s = AssociationMeasure("armonic")(X, y)
             self.assertAlmostEqual(0.374, s, places=3, msg="Armonic Score not working, got {}".format(s))
+
+    def test_inputs_not_changed(self):
+        X, y = numpy.random.rand(10, 3), numpy.random.choice(["a", "b"], size=10)
+        X_copy, y_copy = X.copy(), y.copy()
+        score = AssociationMeasure()(X, y)
+        numpy.testing.assert_array_equal(X_copy, X)
+        numpy.testing.assert_array_equal(y_copy, y)
