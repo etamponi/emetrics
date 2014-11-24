@@ -1,6 +1,9 @@
 import unittest
+
 import numpy
-from emetrics.onehot_label_encoder import OneHotLabelEncoder
+
+from emetrics.label_encoders.onehot_label_encoder import OneHotLabelEncoder
+
 
 __author__ = 'Emanuele Tamponi'
 
