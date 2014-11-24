@@ -8,7 +8,7 @@ from emetrics.label_encoders.onehot_label_encoder import OneHotLabelEncoder
 __author__ = 'Emanuele Tamponi'
 
 
-class OneHotCategoryIteratorTest(unittest.TestCase):
+class OneHotLabelEncoderTest(unittest.TestCase):
 
     def test_onehot_iteration(self):
         labels = numpy.asarray(list("aaaaabbbbbccccc"))
