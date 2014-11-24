@@ -1,4 +1,3 @@
-import numpy
 from sklearn.preprocessing.data import OneHotEncoder
 from sklearn.preprocessing.label import LabelEncoder
 
