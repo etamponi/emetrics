@@ -1,6 +1,8 @@
 import numpy
+
 from emetrics.coefficients.association_measure import AssociationMeasure
 from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
+
 
 __author__ = 'Emanuele Tamponi'
 
