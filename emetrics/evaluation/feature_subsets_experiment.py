@@ -13,7 +13,7 @@ __author__ = 'Emanuele Tamponi'
 
 
 def main():
-    from emetrics.evaluation.configs.feature_subset.score_with_gaussian_noise import (
+    from emetrics.evaluation.configs.feature_subset.wilks_with_gaussian_noise import (
         dump_prefix, score, classifiers, subset_sizes, n_runs, n_folds
     )
 
