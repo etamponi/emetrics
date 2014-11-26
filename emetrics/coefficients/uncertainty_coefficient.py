@@ -1,55 +1,38 @@
 import math
-
 import numpy
-from scipy.spatial.distance import pdist
 from sklearn.neighbors.unsupervised import NearestNeighbors
-
 
 __author__ = 'Emanuele Tamponi'
 
 
 class UncertaintyCoefficient(object):
 
-    def __init__(self, neighbors=5):
-        self.neighbors = neighbors
+    def __init__(self, noise_level=1e-3):
+        self.noise_level = noise_level
 
     def __call__(self, inputs, labels):
-        min_dist = pdist(inputs, metric="chebyshev").min()
-        nn = NearestNeighbors(n_neighbors=self.neighbors+1, metric="chebyshev").fit(inputs)
-        _, labels = numpy.unique(labels, return_inverse=True)
-        n_classes = len(numpy.unique(labels))
-        label_inputs = [inputs[labels == label] for label in range(n_classes)]
-        label_nn = [NearestNeighbors(n_neighbors=self.neighbors+1, metric="chebyshev").fit(l_i) for l_i in label_inputs]
+        classes = numpy.unique(labels)
+        inputs = inputs.copy() + self.noise_level * numpy.random.randn(*inputs.shape)
 
-        N = len(inputs)
-        input_entropy = self._entropy(inputs, nn, min_dist)
-        conditional_entropy = 0
-        label_entropy = 0
-        for label in range(n_classes):
-            N_label = len(label_inputs[label])
-            P_label = float(N_label) / N
-            conditional_entropy += P_label * self._entropy(label_inputs[label], label_nn[label], min_dist)
-            label_entropy -= P_label * math.log(P_label)
-        information = input_entropy - conditional_entropy
+        input_entropy = self._entropy(inputs)
+        conditional_input_entropy = 0.0
+        class_entropy = 0.0
+        for label in classes:
+            class_inputs = inputs[labels == label]
+            class_prob = float(len(class_inputs)) / len(inputs)
+            conditional_input_entropy += class_prob * self._entropy(class_inputs)
+            class_entropy -= class_prob * math.log(class_prob)
+        information = input_entropy - conditional_input_entropy
 
-        return information / label_entropy
-
-    def _entropy(self, data, nn, min_dist):
-        N = len(data)
-        value = 0
-        for x in data:
-            max_distance = nn.kneighbors(x)[0][0][-1] / min_dist
-            value += math.log(max_distance)
-        value /= N
-        value += self._digamma(N) - self._digamma(self.neighbors)
-        return value
+        return information / min(input_entropy, class_entropy)
 
     @staticmethod
-    def _digamma(n):
-        if n == 1:
-            return 0.0
-        else:
-            value = 0.0
-            for i in range(1, n):
-                value += 1.0 / i
-            return value
+    def _entropy(data):
+        euler_const = 0.5772156649
+        nn = NearestNeighbors(n_neighbors=2).fit(data)
+        entropy = 0.0
+        for x in data:
+            nearest_neighbor_distance = nn.kneighbors(x)[0][0].max()
+            entropy += math.log(len(data) * nearest_neighbor_distance)
+        entropy = entropy / len(data) + math.log(2) + euler_const
+        return entropy
