@@ -1,7 +1,9 @@
 import math
+
 import numpy
 from scipy.spatial.distance import pdist
 from sklearn.neighbors.unsupervised import NearestNeighbors
+
 
 __author__ = 'Emanuele Tamponi'
 
@@ -12,7 +14,7 @@ class UncertaintyCoefficient(object):
         self.neighbors = neighbors
 
     def __call__(self, inputs, labels):
-        min_dist = 1  # pdist(inputs, metric="chebyshev").min()
+        min_dist = pdist(inputs, metric="chebyshev").min()
         nn = NearestNeighbors(n_neighbors=self.neighbors+1, metric="chebyshev").fit(inputs)
         _, labels = numpy.unique(labels, return_inverse=True)
         n_classes = len(numpy.unique(labels))
