@@ -1,6 +1,6 @@
 from emetrics.coefficients.determination_coefficient import DeterminationCoefficient
 from emetrics.correlation_score import CorrelationScore
-from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
+from emetrics.label_encoders.onehot_label_encoder import OneHotLabelEncoder
 
 
 __author__ = 'Emanuele Tamponi'
@@ -9,7 +9,7 @@ dump_prefix = "determination"
 
 score = CorrelationScore(
     coefficient=DeterminationCoefficient(),
-    label_encoder=OrdinalLabelEncoder()
+    label_encoder=OneHotLabelEncoder()
 )
 
 classifiers = {
