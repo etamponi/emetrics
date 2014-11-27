@@ -8,8 +8,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from analysis.dataset_utils import ArffLoader
-from emetrics.coefficients.association_measure import AssociationMeasure
-from emetrics.coefficients.determination_coefficient import DeterminationCoefficient
 from emetrics.coefficients.uncertainty_coefficient import UncertaintyCoefficient
 from emetrics.correlation_score import CorrelationScore
 from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder

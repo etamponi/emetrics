@@ -1,7 +1,6 @@
 import unittest
-import numpy
 
-from sklearn.datasets.samples_generator import make_classification
+import numpy
 
 from emetrics.coefficients import UncertaintyCoefficient
 

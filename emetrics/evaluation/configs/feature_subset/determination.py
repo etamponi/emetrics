@@ -1,14 +1,14 @@
-from emetrics.coefficients.uncertainty_coefficient import UncertaintyCoefficient
+from emetrics.coefficients.determination_coefficient import DeterminationCoefficient
 from emetrics.correlation_score import CorrelationScore
 from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
 
 
 __author__ = 'Emanuele Tamponi'
 
-dump_prefix = "uncertainty_gaussian_4"
+dump_prefix = "determination"
 
 score = CorrelationScore(
-    coefficient=UncertaintyCoefficient(noise_level=1e-4),
+    coefficient=DeterminationCoefficient(),
     label_encoder=OrdinalLabelEncoder()
 )
 

@@ -1,6 +1,8 @@
 import math
+
 import numpy
 from sklearn.neighbors.unsupervised import NearestNeighbors
+
 
 __author__ = 'Emanuele Tamponi'
 

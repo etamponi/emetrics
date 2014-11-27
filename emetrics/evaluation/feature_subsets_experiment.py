@@ -1,10 +1,10 @@
 import cPickle
 import os
+import time
 
 import numpy
 import sklearn
 from sklearn.cross_validation import StratifiedKFold
-import time
 
 from analysis.dataset_utils import ArffLoader
 from emetrics.evaluation import dataset_names
@@ -14,11 +14,11 @@ __author__ = 'Emanuele Tamponi'
 
 
 def main():
-    from emetrics.evaluation.configs.feature_subset.uncertainty import (
+    from emetrics.evaluation.configs.feature_subset.determination import (
         dump_prefix, score, classifiers, subset_sizes, n_runs, n_folds
     )
 
-    for dataset_name in dataset_names(n_groups=4, group=0, directory="datasets"):
+    for dataset_name in dataset_names(n_groups=4, group=3, directory="datasets"):
         results_file_name = "results/{}_{}.res".format(dump_prefix, dataset_name)
         if os.path.isfile(results_file_name):
             print "Dataset", dataset_name, "already done, continuing..."

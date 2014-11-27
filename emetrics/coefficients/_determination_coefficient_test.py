@@ -1,6 +1,9 @@
 import unittest
+
 import numpy
+
 from emetrics.coefficients.determination_coefficient import DeterminationCoefficient
+
 
 __author__ = 'Emanuele Tamponi'
 
