@@ -22,9 +22,6 @@ score = CorrelationScore(
 )
 
 classifiers = {
-    "dt": DecisionTreeClassifier(),
-    "rf100": RandomForestClassifier(n_estimators=100),
-    "svc": SVC()
 }
 
 subset_sizes = range(6, 25, 2)

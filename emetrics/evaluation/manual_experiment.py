@@ -8,6 +8,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from analysis.dataset_utils import ArffLoader
+from emetrics.coefficients.association_measure import AssociationMeasure
+from emetrics.coefficients.determination_coefficient import DeterminationCoefficient
 from emetrics.coefficients.uncertainty_coefficient import UncertaintyCoefficient
 from emetrics.correlation_score import CorrelationScore
 from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
@@ -30,20 +32,19 @@ def main():
         "rf100": RandomForestClassifier(n_estimators=10),
     }
 
-    subset_sizes = [6, 7, 8, 9, 10]
-
+    subset_sizes = range(1, 5)
     n_runs = 10
     n_folds = 10
 
-    for dataset_name in ["ionosphere"]:
+    for dataset_name in ["iris"]:
         print "Start", dataset_name
         X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).load_dataset()
         n_features = X.shape[1]
         results = {}
         for subset_size in subset_sizes:
-            print "Considering", subset_size, "features in", dataset_name
             if subset_size >= n_features:
                 break
+            print "Considering", subset_size, "features in", dataset_name
             scores = numpy.zeros(n_runs)
             errors = {key: numpy.zeros(n_runs) for key in classifiers}
             score_times = numpy.zeros(n_runs)

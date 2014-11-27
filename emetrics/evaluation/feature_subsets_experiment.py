@@ -13,19 +13,19 @@ __author__ = 'Emanuele Tamponi'
 
 
 def main():
-    from emetrics.evaluation.configs.feature_subset.wilks_with_gaussian_noise import (
+    from emetrics.evaluation.configs.feature_subset.uncertainty import (
         dump_prefix, score, classifiers, subset_sizes, n_runs, n_folds
     )
 
-    for dataset_name in dataset_names(n_groups=4, group=0, directory="datasets"):
+    for dataset_name in dataset_names(n_groups=4, group=3, directory="datasets"):
         print "Start", dataset_name
         X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).load_dataset()
         n_features = X.shape[1]
         results = {}
         for subset_size in subset_sizes:
-            print "Considering", subset_size, "features in", dataset_name
             if subset_size >= n_features:
                 break
+            print "Considering", subset_size, "features in", dataset_name
             scores = numpy.zeros(n_runs)
             errors = {key: numpy.zeros(n_runs) for key in classifiers}
             score_times = numpy.zeros(n_runs)
