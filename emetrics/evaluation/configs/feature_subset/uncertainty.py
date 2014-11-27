@@ -11,13 +11,10 @@ from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
 
 __author__ = 'Emanuele Tamponi'
 
-dump_prefix = "uncertainty"
-
-gaussian_noise = lambda shape: numpy.random.randn(*shape)
-uniform_noise = lambda shape: numpy.random.uniform(-1.0, 1.0, size=shape)
+dump_prefix = "uncertainty_gaussian_4"
 
 score = CorrelationScore(
-    coefficient=UncertaintyCoefficient(),
+    coefficient=UncertaintyCoefficient(noise_level=1e-4),
     label_encoder=OrdinalLabelEncoder()
 )
 

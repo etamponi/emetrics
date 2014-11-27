@@ -7,7 +7,7 @@ __author__ = 'Emanuele Tamponi'
 
 class UncertaintyCoefficient(object):
 
-    def __init__(self, noise_level=1e-6):
+    def __init__(self, noise_level=0):
         self.noise_level = noise_level
 
     def __call__(self, inputs, labels):

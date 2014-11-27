@@ -1,4 +1,5 @@
 import cPickle
+import os
 
 import numpy
 import sklearn
@@ -17,7 +18,11 @@ def main():
         dump_prefix, score, classifiers, subset_sizes, n_runs, n_folds
     )
 
-    for dataset_name in dataset_names(n_groups=4, group=3, directory="datasets"):
+    for dataset_name in dataset_names(n_groups=4, group=0, directory="datasets"):
+        results_file_name = "results/{}_{}.res".format(dump_prefix, dataset_name)
+        if os.path.isfile(results_file_name):
+            print "Dataset", dataset_name, "already done, continuing..."
+            continue
         print "Start", dataset_name
         X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).load_dataset()
         n_features = X.shape[1]
@@ -68,7 +73,7 @@ def main():
                 "class_times": class_times,
                 "n_folds": n_folds
             }
-        with open("results/{}_{}.res".format(dump_prefix, dataset_name), "w") as f:
+        with open(results_file_name, "w") as f:
             cPickle.dump(results, f)
             print "Saved", f.name
 
