@@ -10,7 +10,7 @@ from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
 
 __author__ = 'Emanuele Tamponi'
 
-dump_prefix = "wilks_gaussian_4"
+dump_prefix = "wilks_gaussian_4_1_25"
 
 gaussian_noise = lambda shape: numpy.random.randn(*shape)
 uniform_noise = lambda shape: numpy.random.uniform(-1.0, 1.0, size=shape)
@@ -30,7 +30,7 @@ classifiers = {
     "svc": SVC()
 }
 
-subset_sizes = range(6, 25, 2)
+subset_sizes = range(1, 26, 1)
 
 n_runs = 10
 n_folds = 10
