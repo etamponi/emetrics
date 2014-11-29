@@ -36,7 +36,7 @@ def main():
 
     for dataset_name in ["iris"]:
         print "Start", dataset_name
-        X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).load_dataset()
+        X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).get_dataset()
         n_features = X.shape[1]
         results = {}
         for subset_size in subset_sizes:

@@ -14,17 +14,17 @@ __author__ = 'Emanuele Tamponi'
 
 
 def main():
-    from emetrics.evaluation.configs.feature_subset.determination import (
+    from emetrics.evaluation.configs.feature_subset.uncertainty import (
         dump_prefix, score, classifiers, subset_sizes, n_runs, n_folds
     )
 
-    for dataset_name in dataset_names(n_groups=4, group=3, directory="datasets"):
+    for dataset_name in dataset_names(n_groups=4, group=1, directory="datasets"):
         results_file_name = "results/{}_{}.res".format(dump_prefix, dataset_name)
         if os.path.isfile(results_file_name):
             print "Dataset", dataset_name, "already done, continuing..."
             continue
         print "Start", dataset_name
-        X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).load_dataset()
+        X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).get_dataset()
         n_features = X.shape[1]
         results = {}
         for subset_size in subset_sizes:
