@@ -22,6 +22,6 @@ class UncertaintyCoefficientTest(unittest.TestCase):
         y = numpy.zeros(100)
         y[0] = 1
         try:
-            value = UncertaintyCoefficient()(X, y)
+            UncertaintyCoefficient()(X, y)
         except ValueError:
             self.fail("Uncertainty failed because class with too few elements")

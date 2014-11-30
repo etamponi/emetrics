@@ -16,8 +16,6 @@ class AssociationMeasureTest(unittest.TestCase):
         y = numpy.random.choice(["a", "b"], size=10)
         s = AssociationMeasure()(X, y)
         self.assertEqual(0, s, msg="CR should be 0, got {}".format(s))
-        s = AssociationMeasure(noise_level=1e-3)(X, y)
-        self.assertNotEqual(0, s, msg="CR should not be 0 with noise, got 0!")
 
     def test_score_is_one(self):
         X = numpy.ones((10, 2))

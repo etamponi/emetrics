@@ -5,14 +5,10 @@ __author__ = 'Emanuele Tamponi'
 
 class AssociationMeasure(object):
 
-    def __init__(self, measure="wilks", noise_level=0,
-                 noise_generator=lambda shape: numpy.random.uniform(-1.0, 1.0, size=shape)):
+    def __init__(self, measure="wilks"):
         self.measure = measure
-        self.noise_level = noise_level
-        self.noise_generator = noise_generator
 
     def __call__(self, inputs, labels):
-        inputs = self._inject_noise(inputs)
         w_matrix, b_matrix, rank = self._calculate_matrices(inputs, labels)
         try:
             eigenvalues = self._calculate_eigenvalues(w_matrix, b_matrix, rank)
@@ -37,10 +33,6 @@ class AssociationMeasure(object):
         if self.measure == "lawley":
             v = eigenvalues.sum() / rank
             return v / (1 + v)
-
-    def _inject_noise(self, inputs):
-        noise = self.noise_level * self.noise_generator(inputs.shape)
-        return inputs + noise
 
     @staticmethod
     def _calculate_matrices(inputs, labels):

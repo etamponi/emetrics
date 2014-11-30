@@ -9,13 +9,8 @@ __author__ = 'Emanuele Tamponi'
 
 class UncertaintyCoefficient(object):
 
-    def __init__(self, noise_level=0):
-        self.noise_level = noise_level
-
     def __call__(self, inputs, labels):
         classes = numpy.unique(labels)
-        inputs = inputs.copy()
-        inputs += self.noise_level * numpy.random.randn(*inputs.shape)
 
         input_entropy = self._entropy(inputs)
         conditional_input_entropy = 0.0
