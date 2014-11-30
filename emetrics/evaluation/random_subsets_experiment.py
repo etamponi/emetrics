@@ -1,8 +1,11 @@
 import time
 
 import numpy
+
 import sklearn
 from sklearn.cross_validation import StratifiedKFold
+
+from sklearn.preprocessing.data import normalize, Normalizer
 
 from analysis.dataset_utils import ArffLoader
 
@@ -53,6 +56,7 @@ class RandomSubsetsExperiment(object):
         mean_score = 0.0
         for train_indices, test_indices in StratifiedKFold(labels, n_folds=self.n_folds):
             inputs_train, labels_train = inputs[train_indices], labels[train_indices]
+            inputs_train = normalize(inputs_train, norm="l1")
             mean_score += scorer(inputs_train, labels_train)
         mean_score /= self.n_folds
         t_stop = time.time()
@@ -65,9 +69,10 @@ class RandomSubsetsExperiment(object):
         mean_error = 0.0
         for train_indices, test_indices in StratifiedKFold(labels, n_folds=self.n_folds):
             inputs_train, labels_train = inputs[train_indices], labels[train_indices]
-            classifier.fit(inputs_train, labels_train)
+            normalizer = Normalizer(norm="l1").fit(inputs_train)
+            classifier.fit(normalizer.transform(inputs_train), labels_train)
             inputs_test, labels_test = inputs[test_indices], labels[test_indices]
-            accuracy = classifier.score(inputs_test, labels_test)
+            accuracy = classifier.score(normalizer.transform(inputs_test), labels_test)
             mean_error += 1 - accuracy
         mean_error /= self.n_folds
         t_stop = time.time()
