@@ -1,10 +1,11 @@
 from itertools import product
 import cPickle
 import os
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
 from sklearn.svm.classes import SVC
-from sklearn.tree import DecisionTreeClassifier
+
 from emetrics.coefficients import AssociationMeasure
 from emetrics.coefficients.determination_coefficient import DeterminationCoefficient
 from emetrics.coefficients.uncertainty_coefficient import UncertaintyCoefficient
@@ -15,11 +16,12 @@ from emetrics.label_encoders.onehot_label_encoder import OneHotLabelEncoder
 from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
 from emetrics.preparers.noise_injector import NoiseInjector
 
+
 __author__ = 'Emanuele Tamponi'
 
 
 def main():
-    subset_sizes = range(1, 26)
+    subset_sizes = range(5, 26, 5)
     datasets = dataset_names(n_groups=4, group=0)
     for normalize, dataset, subset_size in product([True, False], datasets, subset_sizes):
         if normalize:
@@ -32,12 +34,12 @@ def main():
         print "Running {} with {} features".format(dataset, subset_size)
         results = get_experiment(dataset, subset_size, normalize).run()
         if results is not None:
-            with open(results_file) as f:
+            with open(results_file, "w") as f:
                 cPickle.dump(results, f)
 
 
 def get_experiment(dataset_name, subset_size, normalize):
-    RandomSubsetsExperiment(
+    return RandomSubsetsExperiment(
         dataset=dataset_name,
         subset_size=subset_size,
         scorers=[
