@@ -99,4 +99,3 @@ def correct_errors(errors, results_dir, n_folds):
 
 if __name__ == "__main__":
     main()
-
