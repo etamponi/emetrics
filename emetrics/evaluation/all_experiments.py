@@ -1,5 +1,6 @@
 from itertools import product
 import cPickle
+import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
 from sklearn.svm.classes import SVC
@@ -20,15 +21,22 @@ __author__ = 'Emanuele Tamponi'
 def main():
     subset_sizes = range(1, 26)
     datasets = dataset_names(n_groups=4, group=0)
-    for dataset, subset_size in product(datasets, subset_sizes):
+    for normalize, dataset, subset_size in product([True, False], datasets, subset_sizes):
+        if normalize:
+            results_file = "results/{}_{:02d}_norm.res".format(dataset, subset_size)
+        else:
+            results_file = "results/{}_{:02d}.res".format(dataset, subset_size)
+        if os.path.isfile(results_file):
+            print "Experiment already ran, continuing..."
+            continue
         print "Running {} with {} features".format(dataset, subset_size)
-        results = get_experiment(dataset, subset_size).run()
+        results = get_experiment(dataset, subset_size, normalize).run()
         if results is not None:
-            with open("results/{}_{:02d}.res".format(dataset, subset_size)) as f:
+            with open(results_file) as f:
                 cPickle.dump(results, f)
 
 
-def get_experiment(dataset_name, subset_size):
+def get_experiment(dataset_name, subset_size, normalize):
     RandomSubsetsExperiment(
         dataset=dataset_name,
         subset_size=subset_size,
@@ -63,7 +71,8 @@ def get_experiment(dataset_name, subset_size):
             ("sv", SVC())
         ],
         n_folds=5,
-        n_runs=10
+        n_runs=10,
+        normalize=normalize
     )
 
 
