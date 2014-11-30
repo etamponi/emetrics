@@ -63,7 +63,7 @@ def main():
                         X_train, y_train = X_subset[train_indices], y[train_indices]
                         X_test, y_test = X_subset[test_indices], y[test_indices]
                         errors[name][run] += \
-                            1 - classifier.fit(X_train, y_train).score(X_test, y_test) / n_folds
+                            (1 - classifier.fit(X_train, y_train).score(X_test, y_test)) / n_folds
                     t1 = time.time()
                     class_times[name][run] = t1 - t0
             results[subset_size] = {

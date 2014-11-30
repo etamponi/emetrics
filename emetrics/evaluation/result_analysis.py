@@ -22,7 +22,7 @@ def main():
     count_significant = 0
     dataset_completed = 0
     dataset_passed = 0
-    datasets = dataset_names()[:1]
+    datasets = dataset_names()
     for dataset in datasets:
         significants = 0
         total = 0
