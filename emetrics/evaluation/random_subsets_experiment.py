@@ -1,8 +1,11 @@
+import time
+
 import numpy
 import sklearn
 from sklearn.cross_validation import StratifiedKFold
-import time
+
 from analysis.dataset_utils import ArffLoader
+
 
 __author__ = 'Emanuele Tamponi'
 
