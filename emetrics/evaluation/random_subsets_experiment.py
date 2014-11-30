@@ -5,7 +5,7 @@ import numpy
 import sklearn
 from sklearn.cross_validation import StratifiedKFold
 
-from sklearn.preprocessing.data import normalize, Normalizer
+from sklearn import preprocessing
 
 from analysis.dataset_utils import ArffLoader
 
@@ -15,19 +15,22 @@ __author__ = 'Emanuele Tamponi'
 
 class RandomSubsetsExperiment(object):
 
-    def __init__(self, dataset, subset_size, scorers, classifiers, n_folds, n_runs):
+    def __init__(self, dataset, subset_size, scorers, classifiers, n_folds, n_runs, normalize=False):
         self.dataset = dataset
         self.subset_size = subset_size
         self.scorers = scorers
         self.classifiers = classifiers
         self.n_folds = n_folds
         self.n_runs = n_runs
+        self.normalize = normalize
 
     def run(self, directory="datasets/"):
         loader = ArffLoader("{}/{}.arff".format(directory, self.dataset))
         if loader.feature_num() <= self.subset_size:
             return None
         X, y = loader.get_dataset()
+        if self.normalize:
+            preprocessing.normalize(X, copy=False)
         n_features = X.shape[1]
         results = {
             "experiment": self,
@@ -56,7 +59,7 @@ class RandomSubsetsExperiment(object):
         mean_score = 0.0
         for train_indices, test_indices in StratifiedKFold(labels, n_folds=self.n_folds):
             inputs_train, labels_train = inputs[train_indices], labels[train_indices]
-            inputs_train = normalize(inputs_train, norm="l1")
+            # inputs_train = normalize(inputs_train, norm="l1")
             mean_score += scorer(inputs_train, labels_train)
         mean_score /= self.n_folds
         t_stop = time.time()
@@ -69,10 +72,12 @@ class RandomSubsetsExperiment(object):
         mean_error = 0.0
         for train_indices, test_indices in StratifiedKFold(labels, n_folds=self.n_folds):
             inputs_train, labels_train = inputs[train_indices], labels[train_indices]
-            normalizer = Normalizer(norm="l1").fit(inputs_train)
-            classifier.fit(normalizer.transform(inputs_train), labels_train)
+            # normalizer = Normalizer(norm="l1").fit(inputs_train)
+            # classifier.fit(normalizer.transform(inputs_train), labels_train)
+            classifier.fit(inputs_train, labels_train)
             inputs_test, labels_test = inputs[test_indices], labels[test_indices]
-            accuracy = classifier.score(normalizer.transform(inputs_test), labels_test)
+            # accuracy = classifier.score(normalizer.transform(inputs_test), labels_test)
+            accuracy = classifier.score(inputs_test, labels_test)
             mean_error += 1 - accuracy
         mean_error /= self.n_folds
         t_stop = time.time()
