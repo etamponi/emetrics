@@ -1,7 +1,10 @@
 import unittest
+
 from sklearn.tree.tree import DecisionTreeClassifier
+
 from emetrics.correlation_score import CorrelationScore
 from emetrics.evaluation.random_subsets_experiment import RandomSubsetsExperiment
+
 
 __author__ = 'Emanuele Tamponi'
 

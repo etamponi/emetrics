@@ -1,7 +1,10 @@
 import unittest
 import math
+
 import numpy
+
 from emetrics.preparers.noise_injector import NoiseInjector
+
 
 __author__ = 'Emanuele Tamponi'
 

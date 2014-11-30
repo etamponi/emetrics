@@ -1,6 +1,9 @@
 import unittest
+
 import numpy
+
 from emetrics.preparers.bootstrap_sampler import BootstrapSampler
+
 
 __author__ = 'Emanuele Tamponi'
 
