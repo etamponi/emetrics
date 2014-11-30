@@ -3,9 +3,13 @@ from scipy.stats.stats import pearsonr
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
+from emetrics.coefficients.association_measure import AssociationMeasure
+
 from emetrics.correlation_score import CorrelationScore
 
 from emetrics.evaluation.random_subsets_experiment import RandomSubsetsExperiment
+from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
+from emetrics.preparers.bootstrap_sampler import BootstrapSampler
 from emetrics.preparers.noise_injector import NoiseInjector
 
 
@@ -13,16 +17,21 @@ __author__ = 'Emanuele Tamponi'
 
 
 def main():
-    subset_sizes = range(15, 16)
+    subset_sizes = range(1, 6)
     for subset_size in subset_sizes:
         experiment = RandomSubsetsExperiment(
-            dataset="anneal-orig",
+            dataset="iris",
             subset_size=subset_size,
             scorers=[
                 ("wilks", CorrelationScore(
+                    coefficient=AssociationMeasure(
+                        measure="wilks"
+                    ),
                     preparer_pipeline=[
-                        NoiseInjector(stddev=1e-6)
-                    ]
+                        BootstrapSampler(sampling_percent=100),
+                        NoiseInjector(stddev=1e-6),
+                    ],
+                    label_encoder=OrdinalLabelEncoder()
                 ))
             ],
             classifiers=[
@@ -33,11 +42,11 @@ def main():
             n_runs=10
         )
         results = experiment.run()
-        print "Average score time: {:.6f}".format(results["score_times"]["wilks"].mean())
+        if results is None:
+            continue
         for classifier in results["errors"]:
-            print "Average {} time: {:.6f}".format(classifier, results["classifier_times"][classifier].mean())
             corr, _ = pearsonr(results["scores"]["wilks"], results["errors"][classifier])
-            print "Pearson Correlation with score: {:.3f}".format(corr)
+            print "{} - correlation with {}: {:.3f}".format(subset_size, classifier, corr)
 
 
 if __name__ == "__main__":

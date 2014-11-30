@@ -10,4 +10,4 @@ class BootstrapSampler(object):
 
     def apply(self, inputs, labels):
         indices = numpy.random.choice(len(inputs), size=int(self.sampling_percent*len(inputs)))
-        return inputs[indices]
+        return inputs[indices], labels[indices]

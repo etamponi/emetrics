@@ -9,4 +9,4 @@ class NoiseInjector(object):
         self.stddev = stddev
 
     def apply(self, inputs, labels):
-        return inputs.copy() + self.stddev * numpy.random.randn(*inputs.shape)
+        return inputs.copy() + self.stddev * numpy.random.randn(*inputs.shape), labels
