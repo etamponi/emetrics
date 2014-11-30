@@ -14,18 +14,18 @@ __author__ = 'Emanuele Tamponi'
 
 
 def main():
-    from emetrics.evaluation.configs.feature_subset.uncertainty import (
+    from emetrics.evaluation.configs.feature_subset.wilks import (
         dump_prefix, score, classifiers, subset_sizes, n_runs, n_folds
     )
 
-    for dataset_name in dataset_names(n_groups=4, group=1, directory="datasets"):
+    for dataset_name in dataset_names(n_groups=1, group=0, directory="datasets"):
         results_file_name = "results/{}_{}.res".format(dump_prefix, dataset_name)
         if os.path.isfile(results_file_name):
             print "Dataset", dataset_name, "already done, continuing..."
             continue
         print "Start", dataset_name
-        X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).get_dataset()
-        n_features = X.shape[1]
+        loader = ArffLoader("datasets/{}.arff".format(dataset_name))
+        n_features = loader.feature_num()
         results = {}
         for subset_size in subset_sizes:
             if subset_size >= n_features:
@@ -38,7 +38,7 @@ def main():
             for run in range(n_runs):
                 numpy.random.seed(run)
                 subset = tuple(numpy.random.choice(n_features, size=subset_size, replace=False))
-                X_subset = X[:, subset].copy()
+                X_subset, y = loader.get_dataset(subset)
 
                 t0 = time.time()
                 numpy.random.seed(run)
