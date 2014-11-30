@@ -24,8 +24,8 @@ def main():
             print "Dataset", dataset_name, "already done, continuing..."
             continue
         print "Start", dataset_name
-        loader = ArffLoader("datasets/{}.arff".format(dataset_name))
-        n_features = loader.feature_num()
+        X, y = ArffLoader("datasets/{}.arff".format(dataset_name)).get_dataset()
+        n_features = X.shape[1]
         results = {}
         for subset_size in subset_sizes:
             if subset_size >= n_features:
@@ -38,7 +38,7 @@ def main():
             for run in range(n_runs):
                 numpy.random.seed(run)
                 subset = tuple(numpy.random.choice(n_features, size=subset_size, replace=False))
-                X_subset, y = loader.get_dataset(subset)
+                X_subset = X[:, subset].copy()
 
                 t0 = time.time()
                 numpy.random.seed(run)
