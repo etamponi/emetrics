@@ -3,12 +3,12 @@ import cPickle
 import multiprocessing
 import os
 import signal
-from time import sleep
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble.bagging import BaggingClassifier
+from sklearn.ensemble.forest import ExtraTreesClassifier
+from sklearn.ensemble.gradient_boosting import GradientBoostingClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
-import sys
 
 from emetrics.coefficients import AssociationMeasure
 from emetrics.coefficients.determination_coefficient import DeterminationCoefficient
@@ -30,16 +30,19 @@ def main():
     # All sizes up to 10, then 15, 20, 25, 30 and 35
     subset_sizes = range(1, 11) + range(15, 36, 5)
 
-    pool = multiprocessing.Pool(processes=4)
-    signal.signal(signal.SIGINT, terminate_pool(pool))
+    pool = multiprocessing.Pool(4, init_worker)
+    try:
+        for dataset, normalize, subset_size in product(datasets, should_normalize, subset_sizes):
+            pool.apply_async(run_parallel, args=(dataset, normalize, subset_size))
+        pool.close()
+        pool.join()
+    except KeyboardInterrupt:
+        print "Keyboard Interrupt, terminating..."
+        pool.terminate()
+        pool.join()
 
-    results = pool.map_async(run_parallel, product(datasets, should_normalize, subset_sizes))
-    results.get(24*3600*1000)  # Wait for 1000 days
-    pool.join()
 
-
-def run_parallel(params):
-    dataset, normalize, subset_size = params
+def run_parallel(dataset, normalize, subset_size):
     results_file_name = get_results_file_name(dataset, normalize, subset_size)
     print "starting experiment {}".format(results_file_name)
     if os.path.isfile("results/{}.res".format(results_file_name)):
@@ -84,9 +87,11 @@ def get_experiment(dataset_name, subset_size, normalize):
             ))
         ],
         classifiers=[
-            ("rf", RandomForestClassifier(n_estimators=100)),
             ("ab", AdaBoostClassifier(n_estimators=100)),
-            ("ba", BaggingClassifier(n_estimators=100))
+            ("gb", GradientBoostingClassifier(n_estimators=100)),
+            ("ba", BaggingClassifier(n_estimators=100)),
+            ("rf", RandomForestClassifier(n_estimators=100, max_features="log2")),
+            ("et", ExtraTreesClassifier(n_estimators=100, max_features="log2"))
         ],
         n_folds=5,
         n_runs=10,
@@ -102,13 +107,8 @@ def get_results_file_name(dataset, normalize, subset_size):
     )
 
 
-def terminate_pool(pool):
-    def signal_handler(sig, frame):
-        print "Terminating..."
-        pool.terminate()
-        pool.join()
-        sys.exit(0)
-    return signal_handler
+def init_worker():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
 if __name__ == "__main__":

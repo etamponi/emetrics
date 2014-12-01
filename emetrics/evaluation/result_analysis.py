@@ -37,7 +37,13 @@ def main():
 
     from matplotlib import pyplot
     styles = ["bo--", "r^-.", "gs:"]
-    names_map = {"bo": "AdaBoost", "rf": "Random Forest", "sv": "SVM"}
+    names_map = {
+        "ab": "AdaBoost",
+        "gb": "Gradient Boosting",
+        "ba": "Bagging",
+        "rf": "Random Forest",
+        "et": "Ext. Rand. Trees"
+    }
 
     datasets = dataset_names()
     subset_sizes = range(1, 11) + range(15, 36, 5)
