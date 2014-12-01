@@ -30,7 +30,7 @@ def main():
     # All sizes up to 10, then 15, 20, 25, 30 and 35
     subset_sizes = range(1, 11) + range(15, 36, 5)
 
-    pool = multiprocessing.Pool(4, init_worker)
+    pool = multiprocessing.Pool(3, init_worker)
     try:
         for dataset, normalize, subset_size in product(datasets, should_normalize, subset_sizes):
             pool.apply_async(run_parallel, args=(dataset, normalize, subset_size))
