@@ -29,7 +29,7 @@ class UncertaintyCoefficient(object):
         if len(data) == 1:
             return 0.0
         euler_const = 0.5772156649
-        nn = NearestNeighbors(n_neighbors=2, metric="chebyshev").fit(data)
+        nn = NearestNeighbors(n_neighbors=2).fit(data)
         entropy = 0.0
         for x in data:
             nearest_neighbor_distance = nn.kneighbors(x)[0][0].max()

@@ -1,12 +1,9 @@
 from scipy.stats.stats import pearsonr
-
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from emetrics.coefficients.association_measure import AssociationMeasure
-
 from emetrics.correlation_score import CorrelationScore
-
 from emetrics.evaluation.random_subsets_experiment import RandomSubsetsExperiment
 from emetrics.label_encoders.ordinal_label_encoder import OrdinalLabelEncoder
 from emetrics.preparers.bootstrap_sampler import BootstrapSampler

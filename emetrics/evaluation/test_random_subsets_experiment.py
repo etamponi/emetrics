@@ -1,7 +1,7 @@
 import pickle
 import unittest
-import numpy
 
+import numpy
 from sklearn.tree.tree import DecisionTreeClassifier
 
 from emetrics.correlation_score import CorrelationScore
