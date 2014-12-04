@@ -30,7 +30,7 @@ def main():
     # All sizes up to 10, then 15, 20, 25, 30 and 35
     subset_sizes = range(1, 11) + range(15, 36, 5)
 
-    pool = multiprocessing.Pool(3, init_worker)
+    pool = multiprocessing.Pool(4, init_worker)
     try:
         for dataset, normalize, subset_size in product(datasets, should_normalize, subset_sizes):
             pool.apply_async(run_parallel, args=(dataset, normalize, subset_size))
@@ -44,20 +44,20 @@ def main():
 
 def run_parallel(dataset, normalize, subset_size):
     results_file_name = get_results_file_name(dataset, normalize, subset_size)
-    print "starting experiment {}".format(results_file_name)
+    print "{:>5s} - {}".format("start", results_file_name)
     if os.path.isfile("results/{}.res".format(results_file_name)):
-        print "results of {} already present.".format(results_file_name)
+        print "{:>5s} - {}.".format("done", results_file_name)
         return
-    results = get_experiment(dataset, subset_size, normalize).run()
+    results = get_experiment(dataset, normalize, subset_size).run()
     if results is not None:
         with open("results/{}.res".format(results_file_name), "w") as f:
             cPickle.dump(results, f)
-        print "results of {} saved.".format(results_file_name)
+        print "{:>5s} - {}.".format("done", results_file_name)
     else:
-        print "experiment {} not available (subset_size >= n_features)".format(results_file_name)
+        print "{:>5s} - {}.".format("n/a", results_file_name)
 
 
-def get_experiment(dataset_name, subset_size, normalize):
+def get_experiment(dataset_name, normalize, subset_size):
     return RandomSubsetsExperiment(
         dataset=dataset_name,
         subset_size=subset_size,
