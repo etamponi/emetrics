@@ -116,7 +116,7 @@ def correlation_to_range_plots(all_results, pyplot):
     for (dataset, normalize, subset_size), results in all_results.iteritems():
         for (scorer, classifier), comparison in results.iteritems():
             x = comparison["x"]
-            if x.min() <= 0 or x.max() >= 1:
+            if x.min() < 0 or x.max() > 1:
                 print "Problems with {} {}".format(get_results_file_name(dataset, normalize, subset_size), scorer)
                 continue
             x_range = x.max() - x.min()
@@ -178,7 +178,7 @@ def correlation_plots(all_results, pyplot):
 def draw_single_plot(dataset, normalize, subset_size, scorer, classifier, data, pyplot):
     x = data["x"]
     y = data["y"]
-    if x.min() <= 0 or x.max() >= 1:
+    if x.min() < 0 or x.max() > 1:
         return
     if data["p"] > 0.02 or data["corr"] > 0:
         if numpy.random.choice([True, False], p=[0.95, 0.05]):
@@ -238,7 +238,7 @@ def correlation_tables(all_results):
 def write_table(dataset, normalize, classifier, table_data):
     table_name = "table_{}_{}_{}".format(classifier, dataset, "norm" if normalize else "orig")
     with open("figures/{}.tex".format(table_name), "w") as f:
-        f.writelines((r"\begin{table}\centering", NL, r"\label{tab:{%s}}" % table_name, NL))
+        f.writelines((r"\begin{table}\centering", NL, r"\label{tab:%s}" % table_name, NL))
         f.writelines((r"\renewcommand{\arraystretch}{1.2}", NL))
         f.writelines((r"\begin{tabularx}{0.65\textwidth}{>{\small}r *3{Y}}", NL))
         f.writelines((r"\toprule", NL))
@@ -295,7 +295,7 @@ def synthesis_per_dataset(all_results):
 def write_table_synthesis_per_dataset(classifier, table_data):
     table_name = "synthesis_per_dataset_{}".format(classifier)
     with open("figures/{}.tex".format(table_name), "w") as f:
-        f.writelines((r"\begin{table}\centering", NL, r"\label{tab:{%s}}" % table_name, NL))
+        f.writelines((r"\begin{table}\centering", NL, r"\label{tab:%s}" % table_name, NL))
         f.writelines((r"\renewcommand{\arraystretch}{1.10}", NL))
         # TODO: number of columns depend on number of scorers
         f.writelines((r"\begin{tabularx}{0.85\textwidth}{>{\small}XZZcZZcZZ}", NL))
@@ -368,7 +368,7 @@ def synthesis_per_subset_size(all_results):
 def write_table_synthesis_per_subset_size(classifier, table_data):
     table_name = "synthesis_per_subset_size_{}".format(classifier)
     with open("figures/{}.tex".format(table_name), "w") as f:
-        f.writelines((r"\begin{table}\centering", NL, r"\label{tab:{%s}}" % table_name, NL))
+        f.writelines((r"\begin{table}\centering", NL, r"\label{tab:%s}" % table_name, NL))
         f.writelines((r"\renewcommand{\arraystretch}{1.20}", NL))
         # TODO: number of columns depend on number of scorers
         f.writelines((r"\begin{tabularx}{0.85\textwidth}{>{\small}XZZcZZcZZ}", NL))
