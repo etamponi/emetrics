@@ -51,7 +51,7 @@ def main():
             results = cPickle.load(f)
         all_results[(dataset, normalize, subset_size)] = prepare_results(results)
 
-    # correlation_to_range_plots(all_results, pyplot)
+    correlation_to_range_plots(all_results, pyplot)
     correlation_plots(all_results, pyplot)
     correlation_tables(all_results)
     synthesis_per_dataset(all_results)
@@ -155,7 +155,7 @@ def correlation_to_range_plots(all_results, pyplot):
             significant.sum(), valid.sum())
         )
 
-        pyplot.savefig("figures/{}.pdf".format(figure_name))
+        pyplot.savefig("figures/{}.pdf".format(figure_name), bbox_inches="tight")
         pyplot.close()
 
 
@@ -282,9 +282,10 @@ def synthesis_per_dataset(all_results):
                 for subset_size in SUBSET_SIZES:
                     if (dataset, normalize, subset_size) not in all_results:
                         continue
+                    x = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["x"]
                     p = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["p"]
                     corr = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["corr"]
-                    if p <= 0.05 and corr < 0:
+                    if p <= 0.05 and corr < 0 and (x.min() >= 0 and x.max() <= 1):
                         significant += 1
                     total += 1
                 table_data[-1].append((significant, total))
@@ -354,9 +355,10 @@ def synthesis_per_subset_size(all_results):
                 for dataset in DATASETS:
                     if (dataset, normalize, subset_size) not in all_results:
                         continue
+                    x = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["x"]
                     p = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["p"]
                     corr = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["corr"]
-                    if p <= 0.05 and corr < 0:
+                    if p <= 0.05 and corr < 0 and (x.min() >= 0 and x.max() <= 1):
                         significant += 1
                     total += 1
                 table_data[-1].append((significant, total))
