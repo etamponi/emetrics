@@ -1,3 +1,5 @@
+from __future__ import division
+
 from collections import defaultdict
 from itertools import product
 import cPickle
@@ -32,6 +34,7 @@ SCORERS = ["deter", "wilks", "uncer"]
 CLASSIFIERS = ["ab", "gb", "ba", "rf", "et"]
 SUBSET_SIZES = range(1, 11) + range(15, 36, 5)
 DATASETS = dataset_names()
+NL = "\n"
 
 
 def main():
@@ -50,9 +53,9 @@ def main():
 
     # correlation_to_range_plots(all_results, pyplot)
     # correlation_plots(all_results, pyplot)
-    correlation_tables(all_results)
+    # correlation_tables(all_results)
     # synthesis_per_dataset(all_results)
-    # synthesis_per_subset_size(all_results)
+    synthesis_per_subset_size(all_results)
 
 
 def configure_matplotlib():
@@ -224,19 +227,17 @@ def correlation_tables(all_results):
                     all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["p"],
                 ))
         write_table(dataset, normalize, classifier, table_data)
-        return
 
 
 def write_table(dataset, normalize, classifier, table_data):
-    nl = "\n"
     table_name = "table_{}_{}_{}".format(classifier, dataset, "norm" if normalize else "orig")
     with open("figures/{}.tex".format(table_name), "w") as f:
-        f.writelines((r"\begin{table}\centering", nl, r"\label{tab:{%s}}" % table_name, nl))
-        f.writelines((r"\renewcommand{\arraystretch}{1.2}", nl))
-        f.writelines((r"\begin{tabularx}{0.70\textwidth}{r *3{Y}}", nl))
-        f.writelines((r"\toprule", nl))
-        f.writelines((r"Features & {} \\".format(" & ".join(LEGEND[scorer] for scorer in SCORERS)), nl))
-        f.writelines((r"\midrule", nl))
+        f.writelines((r"\begin{table}\centering", NL, r"\label{tab:{%s}}" % table_name, NL))
+        f.writelines((r"\renewcommand{\arraystretch}{1.2}", NL))
+        f.writelines((r"\begin{tabularx}{0.65\textwidth}{>{\small}r *3{Y}}", NL))
+        f.writelines((r"\toprule", NL))
+        f.writelines((r"Features & {} \\".format(" & ".join(LEGEND[scorer] for scorer in SCORERS)), NL))
+        f.writelines((r"\midrule", NL))
         for i, row in enumerate(table_data):
             f.write(r"{}".format(SUBSET_SIZES[i]))
             for corr, p in row:
@@ -254,14 +255,85 @@ def write_table(dataset, normalize, classifier, table_data):
                 if p <= 0.02:
                     f.write(r"}")
                 f.write("$")
-            f.writelines((r"\\", nl))
-        f.writelines((r"\bottomrule", nl))
-        f.writelines((r"\end{tabularx}", nl))
-        caption = r"Dataset {}{}. Results of the comparison with {}.".format(
+            f.writelines((r"\\", NL))
+        f.writelines((r"\bottomrule", NL))
+        f.writelines((r"\end{tabularx}", NL))
+        caption = r"Dataset {}{}. Correlation with {} error rate.".format(
             dataset, " (normalized)" if normalize else "", LEGEND[classifier]
         )
-        f.writelines((r"\caption{%s}" % caption, nl))
-        f.writelines((r"\end{table}", nl))
+        f.writelines((r"\caption{%s}" % caption, NL))
+        f.writelines((r"\end{table}", NL))
+
+
+def synthesis_per_dataset(all_results):
+    for classifier in CLASSIFIERS:
+        table_data = []
+        for normalize, dataset in product([True, False], DATASETS):
+            table_data.append([])
+            for scorer in SCORERS:
+                significant = 0
+                total = 0
+                for subset_size in SUBSET_SIZES:
+                    if (dataset, normalize, subset_size) not in all_results:
+                        continue
+                    p = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["p"]
+                    corr = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["corr"]
+                    if p <= 0.05 and corr < 0:
+                        significant += 1
+                    total += 1
+                table_data[-1].append((significant, total))
+        write_table_synthesis_per_dataset(classifier, table_data)
+
+
+def write_table_synthesis_per_dataset(classifier, table_data):
+    table_name = "synthesis_per_dataset_{}".format(classifier)
+    with open("figures/{}.tex".format(table_name), "w") as f:
+        f.writelines((r"\begin{table}\centering", NL, r"\label{tab:{%s}}" % table_name, NL))
+        f.writelines((r"\renewcommand{\arraystretch}{1.10}", NL))
+        # TODO: number of columns depend on number of scorers
+        f.writelines((r"\begin{tabularx}{0.85\textwidth}{>{\small}XZZcZZcZZ}", NL))
+        f.writelines((r"\toprule", NL))
+        f.writelines((r"Dataset (runs) & {} \\".format(" & \phantom{a} & ".join(
+            ("\multicolumn{2}{c}{%s}" % LEGEND[scorer]) for scorer in SCORERS
+        )), NL))
+        f.writelines((r"\midrule", NL))
+        f.writelines((r" & ", " & & ".join(len(SCORERS)*[r"\tiny orig & \tiny norm"]), r"\\", NL))
+        # TODO: number of columns depend on number of scorers
+        f.writelines((r"\cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}", NL))
+        normalized_data = table_data[:len(CLASSIFIERS)]
+        original_data = table_data[len(CLASSIFIERS):]
+        total_total = 0
+        total_sign = 2 * len(SCORERS) * [0]
+        for i, (normalized_row, original_row) in enumerate(zip(normalized_data, original_data)):
+            total = normalized_row[0][1]
+            total_total += total
+            f.write(r"{} ({})".format(DATASETS[i], total))
+            for j, ((norm_sign, _), (orig_sign, _)) in enumerate(zip(normalized_row, original_row)):
+                f.write(" & ")
+                for k, significant in enumerate([orig_sign, norm_sign]):
+                    if significant / total > 0.60:
+                        f.write(r"$\mathbf{%d}$" % significant)
+                    else:
+                        f.write(r"$%d$" % significant)
+                    if k == 0:
+                        f.write(r" & ")
+                    total_sign[2*j + k] += significant
+                if j < 2:
+                    f.write(r" & ")
+            f.writelines((r"\\", NL))
+        # TODO: number of columns depend on number of scorers
+        f.writelines((r"\cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}", NL))
+        f.writelines((
+            r"\bfseries Total ({}) & {} & {} & & {} & {} & & {} & {} \\".format(total_total, *total_sign),
+            NL
+        ))
+        f.writelines((r"\bottomrule", NL))
+        f.writelines((r"\end{tabularx}", NL))
+        caption = r"Overall significant results when compared to {} error rate.".format(
+            LEGEND[classifier]
+        )
+        f.writelines((r"\caption{%s}" % caption, NL))
+        f.writelines((r"\end{table}", NL))
 
 
 if __name__ == "__main__":
