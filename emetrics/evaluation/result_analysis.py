@@ -28,18 +28,19 @@ LEGEND = {
     "deter": "$R^2$",
     "uncer": "Uncertainty"
 }
+SCORERS = ["deter", "wilks", "uncer"]
+CLASSIFIERS = ["ab", "gb", "ba", "rf", "et"]
+SUBSET_SIZES = range(1, 11) + range(15, 36, 5)
+DATASETS = dataset_names()
 
 
 def main():
     configure_matplotlib()
     from matplotlib import pyplot
 
-    datasets = dataset_names()
-    subset_sizes = range(1, 11) + range(15, 36, 5)
-
     all_results = {}
 
-    for dataset, normalize, subset_size in product(datasets, [True, False], subset_sizes):
+    for dataset, normalize, subset_size in product(DATASETS, [True, False], SUBSET_SIZES):
         results_file_name = get_results_file_name(dataset, normalize, subset_size)
         if not os.path.isfile("results/{}.res".format(results_file_name)):
             continue
@@ -47,8 +48,11 @@ def main():
             results = cPickle.load(f)
         all_results[(dataset, normalize, subset_size)] = prepare_results(results)
 
-    plot_correlation_to_range(all_results, pyplot)
-    # plot_correlation(all_results, pyplot)
+    # correlation_to_range_plots(all_results, pyplot)
+    # correlation_plots(all_results, pyplot)
+    correlation_tables(all_results)
+    # synthesis_per_dataset(all_results)
+    # synthesis_per_subset_size(all_results)
 
 
 def configure_matplotlib():
@@ -75,11 +79,8 @@ def configure_matplotlib():
 
 
 def prepare_results(raw_results):
-    scorers = sorted(raw_results["scores"].keys())
-    classifiers = sorted(raw_results["errors"].keys())
-
     results = {}
-    for scorer, classifier in product(scorers, classifiers):
+    for scorer, classifier in product(SCORERS, CLASSIFIERS):
         scores = raw_results["scores"][scorer]
         errors = raw_results["errors"][classifier]
         corr, p = pearsonr(scores, errors)
@@ -104,7 +105,7 @@ def get_figure_file_name(results_file_name, scorer):
     return "{}_{}".format(scorer, results_file_name)
 
 
-def plot_correlation_to_range(all_results, pyplot):
+def correlation_to_range_plots(all_results, pyplot):
     n_bins = 5
     width = 0.6/n_bins
 
@@ -137,7 +138,7 @@ def plot_correlation_to_range(all_results, pyplot):
 
         pyplot.ylim(0, 105)
         pyplot.yticks(range(10, 101, 10), ["{}%".format(percent) for percent in range(10, 101, 10)])
-        pyplot.ylabel("Significant rankings".format(LEGEND[classifier]))
+        pyplot.ylabel("Percentage of significant rankings")
 
         x_ticks = ["{:.1f} to {:.1f}".format(bins[i], bins[i+1]) for i in range(len(bins)-1)]
         pyplot.xlim(0, 1)
@@ -155,56 +156,112 @@ def plot_correlation_to_range(all_results, pyplot):
         pyplot.close()
 
 
-def plot_correlation(all_results, pyplot):
+def correlation_plots(all_results, pyplot):
+    numpy.random.seed(1)
+
     datasets = dataset_names()
-    normalization = [True]
+    normalization = [True, False]
     subset_sizes = [3, 5, 10, 15, 20]
 
     for dataset, normalize, subset_size in product(datasets, normalization, subset_sizes):
         results = all_results.get((dataset, normalize, subset_size), None)
         if results is None:
             continue
-        scorers = ["deter", "wilks", "uncer"]
-        classifiers = ["ab", "gb", "ba", "rf", "et"]
-        for i, scorer in enumerate(scorers):
-            for j, classifier in enumerate(classifiers):
-                data = results[(scorer, classifier)]
-                x = data["x"]
-                y = data["y"]
-                if x.min() <= 0 or x.max() >= 1:
+        for scorer, classifier in product(SCORERS, CLASSIFIERS):
+            data = results[(scorer, classifier)]
+            draw_single_plot(dataset, normalize, subset_size, scorer, classifier, data, pyplot)
+
+
+def draw_single_plot(dataset, normalize, subset_size, scorer, classifier, data, pyplot):
+    x = data["x"]
+    y = data["y"]
+    if x.min() <= 0 or x.max() >= 1:
+        return
+    if data["p"] > 0.02 or data["corr"] > 0:
+        if numpy.random.choice([True, False], p=[0.95, 0.05]):
+            return
+        else:
+            wrong = True
+    else:
+        wrong = False
+    pyplot.scatter(x, y, color="k", marker="s", s=20)
+    x_min, x_max = pyplot.xlim()
+    y_min, y_max = pyplot.ylim()
+    # noinspection PyTupleAssignmentBalance
+    m, q = numpy.polyfit(x, y, deg=1)
+    pyplot.plot([0, 1], [q, q + m], "k--", linewidth=1.5)
+    # Format
+    pyplot.xlim(max(0, x_min), min(1, x_max))
+    pyplot.ylim(max(0, y_min), min(1, y_max))
+    y_range = pyplot.ylim()[1] - pyplot.ylim()[0]
+    x_range = pyplot.xlim()[1] - pyplot.xlim()[0]
+    pyplot.axes().set_aspect(x_range / y_range)
+    pyplot.grid()
+    pyplot.xticks(numpy.linspace(*pyplot.xlim(), num=6))
+    pyplot.yticks(numpy.linspace(*pyplot.ylim(), num=6))
+    pyplot.xlabel(LEGEND[scorer])
+    pyplot.ylabel("{} error rate".format(LEGEND[classifier]))
+    pyplot.title("{}, {} features - ${:.1f}$% of correlation".format(dataset, subset_size, 100*data["corr"]**2))
+    pyplot.savefig("figures/{}plot_{}_{}_{}.pdf".format(
+        "wrong" if wrong else "",
+        scorer, classifier, get_results_file_name(dataset, normalize, subset_size)), bbox_inches="tight"
+    )
+    pyplot.close()
+
+
+def correlation_tables(all_results):
+    normalization = [True, False]
+
+    for dataset, normalize, classifier in product(DATASETS, normalization, CLASSIFIERS):
+        table_data = []
+        for subset_size in SUBSET_SIZES:
+            if (dataset, normalize, subset_size) not in all_results:
+                break
+            table_data.append([])
+            for scorer in SCORERS:
+                table_data[-1].append((
+                    all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["corr"],
+                    all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["p"],
+                ))
+        write_table(dataset, normalize, classifier, table_data)
+        return
+
+
+def write_table(dataset, normalize, classifier, table_data):
+    nl = "\n"
+    table_name = "table_{}_{}_{}".format(classifier, dataset, "norm" if normalize else "orig")
+    with open("figures/{}.tex".format(table_name), "w") as f:
+        f.writelines((r"\begin{table}\centering", nl, r"\label{tab:{%s}}" % table_name, nl))
+        f.writelines((r"\renewcommand{\arraystretch}{1.2}", nl))
+        f.writelines((r"\begin{tabularx}{0.70\textwidth}{r *3{Y}}", nl))
+        f.writelines((r"\toprule", nl))
+        f.writelines((r"Features & {} \\".format(" & ".join(LEGEND[scorer] for scorer in SCORERS)), nl))
+        f.writelines((r"\midrule", nl))
+        for i, row in enumerate(table_data):
+            f.write(r"{}".format(SUBSET_SIZES[i]))
+            for corr, p in row:
+                f.write(" & ")
+                if corr > 0:
+                    f.write("n/a")
                     continue
-                if data["p"] > 0.02 or data["corr"] > 0:
-                    if numpy.random.choice([True, False], p=[0.95, 0.05]):
-                        continue
-                    else:
-                        wrong = True
-                else:
-                    wrong = False
-                pyplot.scatter(x, y, color=SCATTER_COLORS[j], marker=SCATTER_MARKERS[j], s=20)
-                # noinspection PyTupleAssignmentBalance
-                m, q = numpy.polyfit(x, y, deg=1)
-                x_min, x_max = pyplot.xlim()
-                pyplot.xlim(max(0, x_min), min(1, x_max))
-                pyplot.plot([x_min, x_max], [q + m*x_min, q + m*x_max], LINE_STYLES[j], linewidth=1.5)
-                # Format
-                pyplot.ylim(pyplot.ylim()[0], pyplot.ylim()[1])
-                y_range = pyplot.ylim()[1] - pyplot.ylim()[0]
-                x_range = pyplot.xlim()[1] - pyplot.xlim()[0]
-                pyplot.axes().set_aspect(x_range / y_range)
-                pyplot.grid()
-                pyplot.xticks(numpy.linspace(*pyplot.xlim(), num=6))
-                pyplot.yticks(numpy.linspace(*pyplot.ylim(), num=6))
-                pyplot.xlabel(LEGEND[scorer])
-                pyplot.ylabel("{} error rate".format(LEGEND[classifier]))
-                pyplot.title("{}, {} features - correlation: ${:.2f}$".format(
-                    dataset, subset_size,
-                    results[(scorer, classifier)]["corr"])
-                )
-                pyplot.savefig("figures/{}plot_{}_{}_{}.pdf".format(
-                    "wrong" if wrong else "",
-                    scorer, classifier, get_results_file_name(dataset, normalize, subset_size)), bbox_inches="tight"
-                )
-                pyplot.close()
+                f.write("$")
+                if p <= 0.02:
+                    f.write(r"\mathbf{")
+                corr = 100 * corr**2
+                if p <= 0.05:
+                    f.write(r"\bullet \ ")
+                f.write("{:.1f}\%".format(corr))
+                if p <= 0.02:
+                    f.write(r"}")
+                f.write("$")
+            f.writelines((r"\\", nl))
+        f.writelines((r"\bottomrule", nl))
+        f.writelines((r"\end{tabularx}", nl))
+        caption = r"Dataset {}{}. Results of the comparison with {}.".format(
+            dataset, " (normalized)" if normalize else "", LEGEND[classifier]
+        )
+        f.writelines((r"\caption{%s}" % caption, nl))
+        f.writelines((r"\end{table}", nl))
 
 
 if __name__ == "__main__":
