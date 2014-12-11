@@ -4,7 +4,7 @@ from collections import defaultdict
 from itertools import product
 import cPickle
 import os
-from math import isnan
+import math
 
 import matplotlib
 import numpy
@@ -87,9 +87,9 @@ def prepare_results(raw_results):
         scores = raw_results["scores"][scorer]
         errors = raw_results["errors"][classifier]
         corr, p = pearsonr(scores, errors)
-        if isnan(corr):
-            corr = 0.0
         x = numpy.sort(scores)
+        if x.min() <= 0 or x.max() >= 1:
+            corr = float("NaN")
         y = errors[scores.argsort()]
         x_time = raw_results["score_times"][scorer].mean()
         y_time = raw_results["classifier_times"][classifier].mean()
@@ -97,7 +97,7 @@ def prepare_results(raw_results):
             "x": x,
             "y": y,
             "corr": corr,
-            "p": p,
+            "p": p / 2,  # one-tailed p-value
             "x_time": x_time,
             "y_time": y_time
         }
@@ -115,10 +115,10 @@ def correlation_to_range_plots(all_results, pyplot):
     range_to_corr = defaultdict(lambda: defaultdict(list))
     for (dataset, normalize, subset_size), results in all_results.iteritems():
         for (scorer, classifier), comparison in results.iteritems():
-            x = comparison["x"]
-            if x.min() < 0 or x.max() > 1:
+            if math.isnan(comparison["corr"]):
                 print "Problems with {} {}".format(get_results_file_name(dataset, normalize, subset_size), scorer)
                 continue
+            x = comparison["x"]
             x_range = x.max() - x.min()
             if comparison["p"] <= 0.05 and comparison["corr"] < 0:
                 range_to_corr[(scorer, classifier, normalize)]["significant"].append(x_range)
@@ -176,17 +176,17 @@ def correlation_plots(all_results, pyplot):
 
 
 def draw_single_plot(dataset, normalize, subset_size, scorer, classifier, data, pyplot):
-    x = data["x"]
-    y = data["y"]
-    if x.min() < 0 or x.max() > 1:
+    if math.isnan(data["corr"]):
         return
-    if data["p"] > 0.02 or data["corr"] > 0:
+    if data["p"] > 0.01 or (data["p"] <= 0.01 and data["corr"] > 0):
         if numpy.random.choice([True, False], p=[0.95, 0.05]):
             return
         else:
             wrong = True
     else:
         wrong = False
+    x = data["x"]
+    y = data["y"]
     pyplot.scatter(x, y, color="k", marker="s", s=20)
     x_min, x_max = pyplot.xlim()
     y_min, y_max = pyplot.ylim()
@@ -248,17 +248,17 @@ def write_table(dataset, normalize, classifier, table_data):
             f.write(r"{}".format(SUBSET_SIZES[i]))
             for corr, p in row:
                 f.write(" & ")
-                if corr > 0:
+                if math.isnan(corr) or corr > 0:
                     f.write("n/a")
                     continue
                 f.write("$")
-                if p <= 0.02:
+                if p <= 0.01:
                     f.write(r"\mathbf{")
                 corr = 100 * corr**2
                 if p <= 0.05:
                     f.write(r"\bullet \ ")
                 f.write("{:.1f}\%".format(corr))
-                if p <= 0.02:
+                if p <= 0.01:
                     f.write(r"}")
                 f.write("$")
             f.writelines((r"\\", NL))
@@ -282,10 +282,9 @@ def synthesis_per_dataset(all_results):
                 for subset_size in SUBSET_SIZES:
                     if (dataset, normalize, subset_size) not in all_results:
                         continue
-                    x = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["x"]
                     p = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["p"]
                     corr = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["corr"]
-                    if p <= 0.05 and corr < 0 and (x.min() >= 0 and x.max() <= 1):
+                    if p <= 0.05 and corr < 0:
                         significant += 1
                     total += 1
                 table_data[-1].append((significant, total))
@@ -355,10 +354,9 @@ def synthesis_per_subset_size(all_results):
                 for dataset in DATASETS:
                     if (dataset, normalize, subset_size) not in all_results:
                         continue
-                    x = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["x"]
                     p = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["p"]
                     corr = all_results[(dataset, normalize, subset_size)][(scorer, classifier)]["corr"]
-                    if p <= 0.05 and corr < 0 and (x.min() >= 0 and x.max() <= 1):
+                    if p <= 0.05 and corr < 0:
                         significant += 1
                     total += 1
                 table_data[-1].append((significant, total))
