@@ -5,7 +5,7 @@ import sklearn
 from sklearn.cross_validation import StratifiedKFold
 from sklearn import preprocessing
 
-from analysis.dataset_utils import ArffLoader
+from eole.analysis.dataset_utils import ArffLoader
 
 
 __author__ = 'Emanuele Tamponi'
