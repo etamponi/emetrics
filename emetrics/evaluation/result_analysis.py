@@ -17,9 +17,6 @@ from emetrics.evaluation.all_experiments import get_results_file_name
 __author__ = 'Emanuele Tamponi'
 
 
-SCATTER_COLORS = ["b", "r", "g", "k", "m"]
-SCATTER_MARKERS = ["o", "^", "s", "x", "D"]
-LINE_STYLES = ["b--", "r-.", "g:", "k-.", "m--"]
 LEGEND = {
     "ab": "AdaBoost",
     "gb": "Gradient Boosting",
